@@ -36,3 +36,4 @@ prisma/*.db-journal
 
 # test coverage
 /coverage
+.neon
