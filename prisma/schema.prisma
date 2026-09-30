@@ -1,0 +1,322 @@
+// CashShield Database Schema
+// Uses SQLite for local development. Switch to PostgreSQL by changing the provider
+// and DATABASE_URL in .env (see README for instructions).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Organization & Users
+// ============================================================================
+
+model Organization {
+  id                      String   @id @default(cuid())
+  name                    String
+  baseCurrency            String   @default("USD")
+  minimumCashReserveCents Int      @default(0)
+  defaultProjectionPeriod String   @default("MONTHLY") // WEEKLY | MONTHLY
+  fiscalYearStartMonth    Int      @default(1)
+  currentCashCents        Int      @default(0)
+  onboardingCompleted     Boolean  @default(false)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  memberships       OrganizationMembership[]
+  financingAccounts FinancingAccount[]
+  installments      Installment[]
+  cashFlows         CashFlowEntry[]
+  obligations       BusinessObligation[]
+  scenarios         Scenario[]
+  alerts            Alert[]
+  auditEvents       AuditEvent[]
+  importedFiles     ImportedFile[]
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String
+  passwordHash   String
+  emailVerified  Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  memberships    OrganizationMembership[]
+  sessions       Session[]
+  auditEvents    AuditEvent[]
+  passwordResets PasswordResetToken[]
+  importedFiles  ImportedFile[]
+}
+
+model OrganizationMembership {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  role           String   @default("OWNER") // OWNER | ADMIN | FINANCE_MANAGER | VIEWER
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+// ============================================================================
+// Financing
+// ============================================================================
+
+model FinancingAccount {
+  id                         String   @id @default(cuid())
+  organizationId             String
+  name                       String
+  lender                     String
+  type                       String   // TERM_LOAN | REVOLVING_CREDIT | EQUIPMENT_FINANCING | LEASE | MERCHANT_CASH_ADVANCE | OTHER
+  originalPrincipalCents     Int
+  outstandingPrincipalCents  Int
+  annualInterestRate         Float    @default(0)
+  interestType               String   @default("FIXED") // FIXED | VARIABLE
+  startDate                  String   // ISO date
+  maturityDate               String   // ISO date
+  paymentFrequency           String   // WEEKLY | BIWEEKLY | MONTHLY | QUARTERLY | ANNUAL
+  repaymentMethod            String   // AMORTIZING | EQUAL_PRINCIPAL | INTEREST_ONLY | BULLET
+  paymentAmountCents         Int      @default(0)
+  feesCents                  Int      @default(0)
+  gracePeriodMonths          Int      @default(0)
+  status                     String   @default("ACTIVE") // ACTIVE | PAID_OFF | DEFAULTED | CANCELLED
+  notes                      String   @default("")
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  installments  Installment[]
+  obligations   BusinessObligation[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([maturityDate])
+}
+
+model Installment {
+  id                       String   @id @default(cuid())
+  financingAccountId       String
+  organizationId           String
+  number                   Int
+  dueDate                  String   // ISO date
+  openingPrincipalCents    Int
+  interestCents            Int
+  principalRepaymentCents  Int
+  feesCents                Int      @default(0)
+  totalPaymentCents        Int
+  closingPrincipalCents    Int
+  status                   String   @default("PENDING") // PENDING | PAID | OVERDUE | PARTIAL
+  paidDate                 String?
+  paidAmountCents          Int      @default(0)
+  createdAt                DateTime @default(now())
+
+  financingAccount FinancingAccount @relation(fields: [financingAccountId], references: [id], onDelete: Cascade)
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([financingAccountId, number])
+  @@index([organizationId])
+  @@index([financingAccountId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+// ============================================================================
+// Cash Flows
+// ============================================================================
+
+model CashFlowEntry {
+  id                String   @id @default(cuid())
+  organizationId    String
+  name              String
+  category          String   // REVENUE | CUSTOMER_RECEIPTS | PAYROLL | VENDOR_PAYMENTS | RENT | UTILITIES | INSURANCE | TAXES | INVENTORY | MARKETING | ONE_TIME_EXPENSE | OTHER_RECURRING
+  type              String   // INFLOW | OUTFLOW
+  amountCents       Int
+  recurrence        String   @default("ONE_TIME") // ONE_TIME | WEEKLY | BIWEEKLY | MONTHLY | QUARTERLY | ANNUAL
+  startDate         String   // ISO date
+  endDate           String?
+  expectedDelayDays Int      @default(0)
+  status            String   @default("PROJECTED") // ACTUAL | PROJECTED
+  notes             String   @default("")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([category])
+  @@index([type])
+  @@index([startDate])
+  @@index([status])
+}
+
+// ============================================================================
+// Business Obligations
+// ============================================================================
+
+model BusinessObligation {
+  id                String   @id @default(cuid())
+  organizationId    String
+  name              String
+  type              String   // LOAN_INSTALLMENT | PAYROLL | TAX | VENDOR | RENT | UTILITIES | INSURANCE | LEASE | OTHER
+  amountCents       Int
+  dueDate           String   // ISO date
+  recurrence        String   @default("ONE_TIME")
+  endDate           String?
+  status            String   @default("PENDING") // PENDING | PAID | OVERDUE | CANCELLED
+  financingAccountId String?
+  notes             String   @default("")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  financingAccount  FinancingAccount?  @relation(fields: [financingAccountId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([type])
+  @@index([dueDate])
+  @@index([status])
+  @@index([financingAccountId])
+}
+
+// ============================================================================
+// Scenarios
+// ============================================================================
+
+model Scenario {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  type           String   // BASE | MILD_DOWNSIDE | SEVERE_DOWNSIDE | CUSTOM
+  description    String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  adjustments  ScenarioAdjustment[]
+
+  @@index([organizationId])
+  @@index([type])
+}
+
+model ScenarioAdjustment {
+  id          String  @id @default(cuid())
+  scenarioId  String
+  type        String  // REVENUE_DECLINE | REVENUE_GROWTH | EXPENSE_INCREASE | EXPENSE_REDUCTION | PAYMENT_DELAY | INTEREST_RATE_CHANGE | NEW_LOAN | REFINANCING | REPAYMENT_ACCELERATION | ONE_TIME_EXPENSE | PAYROLL_CHANGE | TAX_CHANGE
+  value       Float
+  isPercentage Boolean @default(true)
+  description String  @default("")
+
+  scenario Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  @@index([scenarioId])
+}
+
+// ============================================================================
+// Alerts
+// ============================================================================
+
+model Alert {
+  id             String   @id @default(cuid())
+  organizationId String
+  type           String   // REPAYMENT_DUE_7_DAYS | LARGE_OBLIGATION_30_DAYS | CASH_BELOW_RESERVE | PROJECTED_NEGATIVE_CASH | BALLOON_PAYMENT_APPROACHING | OVERDUE_INSTALLMENT | SCENARIO_SHORTFALL
+  severity       String   // INFO | WARNING | CRITICAL
+  title          String
+  message        String
+  details        String   @default("{}") // JSON string
+  relatedEntityId String?
+  isRead         Boolean  @default(false)
+  isDismissed    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([type])
+  @@index([severity])
+  @@index([isRead])
+  @@index([isDismissed])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// Audit
+// ============================================================================
+
+model AuditEvent {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?
+  action         String   // CREATE | UPDATE | DELETE | GENERATE | IMPORT | EXPORT
+  entityType     String
+  entityId       String
+  changes        String   @default("{}") // JSON string
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
+}
+
+model ImportedFile {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  filename       String
+  type           String   // LOANS | CASH_FLOWS | OBLIGATIONS | TRANSACTIONS
+  status         String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED
+  totalRows      Int      @default(0)
+  successRows    Int      @default(0)
+  errorRows      Int      @default(0)
+  errors         String   @default("[]") // JSON string
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([createdAt])
+}
