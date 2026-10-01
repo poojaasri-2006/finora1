@@ -5,6 +5,7 @@
   "description": "SME liquidity command center — repayment-capacity analysis and early warning of cash shortages",
   "scripts": {
     "dev": "next dev",
+    "postinstall": "prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src/ tests/ --ext .ts,.tsx",

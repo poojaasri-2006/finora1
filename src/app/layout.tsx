@@ -5,8 +5,9 @@ import { ToastProvider } from '@/components/ui/toast-provider';
 import { AppShell } from '@/components/layout/app-shell';
 
 export const metadata: Metadata = {
-  title: 'CashShield — SME Liquidity Command Center',
-  description: 'Know exactly when repayment commitments may put your business below its safe cash reserve.',
+  title: 'Finora',
+  description: 'Plan SME loan repayments and cash flow — see where repayments may create liquidity pressure before it happens.',
+  applicationName: 'Finora',
 };
 
 export default function RootLayout({
