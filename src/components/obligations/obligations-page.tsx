@@ -165,14 +165,14 @@ export function ObligationsPage() {
               <tbody>
                 {obligations.map((ob) => (
                   <tr key={ob.id}>
-                    <td className="font-medium text-slate-900">{ob.name}</td>
-                    <td><span className="badge-neutral">{ob.type}</span></td>
-                    <td className="text-slate-600">{formatDate(ob.dueDate)}</td>
-                    <td className="text-slate-600">{ob.recurrence.replace(/_/g, ' ')}</td>
-                    <td className="text-right font-medium text-slate-900">{formatMoney(ob.amountCents, currency)}</td>
-                    <td><span className={ob.status === 'PENDING' ? 'badge-warning' : ob.status === 'PAID' ? 'badge-safe' : 'badge-neutral'}>{ob.status}</span></td>
+                    <td data-label="Name" className="font-medium text-slate-900">{ob.name}</td>
+                    <td data-label="Type"><span className="badge-neutral">{ob.type}</span></td>
+                    <td data-label="Due" className="text-slate-600">{formatDate(ob.dueDate)}</td>
+                    <td data-label="Recurrence" className="text-slate-600">{ob.recurrence.replace(/_/g, ' ')}</td>
+                    <td data-label="Amount" className="text-right font-medium text-slate-900">{formatMoney(ob.amountCents, currency)}</td>
+                    <td data-label="Status"><span className={ob.status === 'PENDING' ? 'badge-warning' : ob.status === 'PAID' ? 'badge-safe' : 'badge-neutral'}>{ob.status}</span></td>
                     {(mayCreate || mayDelete) && (
-                      <td className="text-right">
+                      <td data-label="Actions" className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {mayCreate && (
                             <button type="button" className="row-delete" title={`Edit ${ob.name}`} aria-label={`Edit ${ob.name}`} onClick={() => { setEditing(ob); setShowForm(true); setFormError(null); }}>

@@ -108,20 +108,20 @@ export function FinancingPage() {
             <tbody>
               {accounts.map((account) => (
                 <tr key={account.id}>
-                  <td className="font-medium text-slate-900"><Link href={`/financing/${account.id}`} className="text-indigo-600 hover:underline">{account.name}</Link></td>
-                  <td className="text-slate-600">{account.lender}</td>
-                  <td><span className="badge-neutral">{account.type.replace(/_/g, ' ')}</span></td>
-                  <td className="text-slate-600">{account.repaymentMethod.replace(/_/g, ' ')}</td>
-                  <td className="text-right font-medium">{formatMoney(account.outstandingPrincipalCents, currency)}</td>
-                  <td className="text-right">{(account.annualInterestRate * 100).toFixed(2)}%</td>
-                  <td className="text-slate-600">{formatDate(account.maturityDate)}</td>
-                  <td>
+                  <td data-label="Name" className="font-medium text-slate-900"><Link href={`/financing/${account.id}`} className="text-indigo-600 hover:underline">{account.name}</Link></td>
+                  <td data-label="Lender" className="text-slate-600">{account.lender}</td>
+                  <td data-label="Type"><span className="badge-neutral">{account.type.replace(/_/g, ' ')}</span></td>
+                  <td data-label="Method" className="text-slate-600">{account.repaymentMethod.replace(/_/g, ' ')}</td>
+                  <td data-label="Outstanding" className="text-right font-medium">{formatMoney(account.outstandingPrincipalCents, currency)}</td>
+                  <td data-label="Rate" className="text-right">{(account.annualInterestRate * 100).toFixed(2)}%</td>
+                  <td data-label="Maturity" className="text-slate-600">{formatDate(account.maturityDate)}</td>
+                  <td data-label="Status">
                     <span className={account.status === 'ACTIVE' ? 'badge-safe' : 'badge-neutral'}>
                       {account.status}
                     </span>
                   </td>
                   {mayDelete && (
-                    <td className="text-right">
+                    <td data-label="Actions" className="text-right">
                       <DeleteButton label={`Delete ${account.name}`} confirmText={`Delete financing account "${account.name}"? Its schedule and installments will be removed.`} onDelete={() => deleteAccount(account.id, account.name)} />
                     </td>
                   )}

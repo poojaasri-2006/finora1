@@ -185,14 +185,14 @@ export function CashFlowsPage() {
               <tbody>
                 {filtered.map((entry) => (
                   <tr key={entry.id}>
-                    <td className="font-medium text-slate-900">{entry.name}</td>
-                    <td><span className="badge-neutral">{entry.category.replace(/_/g, ' ')}</span></td>
-                    <td><span className={entry.type === 'INFLOW' ? 'badge-safe' : 'badge-warning'}>{entry.type}</span></td>
-                    <td className="text-slate-600">{entry.recurrence.replace(/_/g, ' ')}</td>
-                    <td className="text-slate-600">{formatDate(entry.startDate)}</td>
-                    <td className={`text-right font-medium ${entry.type === 'INFLOW' ? 'text-green-600' : 'text-red-600'}`}>{entry.type === 'INFLOW' ? '+' : '-'}{formatMoney(entry.amountCents, currency)}</td>
+                    <td data-label="Name" className="font-medium text-slate-900">{entry.name}</td>
+                    <td data-label="Category"><span className="badge-neutral">{entry.category.replace(/_/g, ' ')}</span></td>
+                    <td data-label="Type"><span className={entry.type === 'INFLOW' ? 'badge-safe' : 'badge-warning'}>{entry.type}</span></td>
+                    <td data-label="Recurrence" className="text-slate-600">{entry.recurrence.replace(/_/g, ' ')}</td>
+                    <td data-label="Start" className="text-slate-600">{formatDate(entry.startDate)}</td>
+                    <td data-label="Amount" className={`text-right font-medium ${entry.type === 'INFLOW' ? 'text-green-600' : 'text-red-600'}`}>{entry.type === 'INFLOW' ? '+' : '-'}{formatMoney(entry.amountCents, currency)}</td>
                     {(mayCreate || mayDelete) && (
-                      <td className="text-right">
+                      <td data-label="Actions" className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {mayCreate && (
                             <button type="button" className="row-delete" title={`Edit ${entry.name}`} aria-label={`Edit ${entry.name}`} onClick={() => { setEditing(entry); setShowForm(true); setFormError(null); }}>
