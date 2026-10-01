@@ -34,14 +34,12 @@ export async function POST(request: Request) {
       },
     });
 
-    // In development mode, return the token directly
-    // In production, this would send an email with the reset link
-    const isDev = process.env.NODE_ENV !== 'production';
-
+    // No email provider is configured for this hackathon build, so the reset link is
+    // returned directly and shown in the UI. In a real deployment you would email it.
     return NextResponse.json({
-      message: 'If an account exists with this email, a reset link has been sent.',
-      // Development mode only — remove in production
-      ...(isDev && { devToken: token, devResetUrl: `/reset-password?token=${token}` }),
+      message: 'Reset link generated. Use the button below to set a new password.',
+      devToken: token,
+      devResetUrl: `/reset-password?token=${token}`,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

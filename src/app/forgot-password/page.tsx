@@ -7,6 +7,7 @@ import '@/components/auth/login-v2.css';
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+  const [resetUrl, setResetUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +28,7 @@ export default function ForgotPasswordPage() {
         return;
       }
       setMessage(data.message);
+      if (data.devResetUrl) setResetUrl(data.devResetUrl);
     } catch {
       setError('An error occurred. Please try again.');
     } finally {
@@ -41,6 +43,7 @@ export default function ForgotPasswordPage() {
         <h2>Reset your password</h2>
 
         {message && <div className="auth-msg ok">{message}</div>}
+        {resetUrl && <p style={{ marginBottom: 16 }}><Link href={resetUrl} className="auth-link">Set a new password &rarr;</Link></p>}
         {error && <div className="auth-msg err">{error}</div>}
 
         <form onSubmit={handleSubmit}>
