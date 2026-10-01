@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatMoney } from '@/domain/money';
 import { formatDate, todayISO } from '@/domain/dates';
 import { generateSchedule } from '@/domain/schedule';
@@ -32,6 +32,14 @@ export function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(todayISO());
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const detailRef = useRef<HTMLDivElement>(null);
+
+  function selectDay(dateStr: string) {
+    setSelectedDate(dateStr);
+    if (typeof window !== 'undefined' && window.innerWidth < 860) {
+      requestAnimationFrame(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
+  }
 
   useEffect(() => {
     async function loadData() {
@@ -248,7 +256,7 @@ export function CalendarPage() {
                   key={dateStr}
                   type="button"
                   className={`cal-cell ${dateStr === todayISO() ? 'today' : ''} ${dateStr === selectedDate ? 'selected' : ''}`}
-                  onClick={() => setSelectedDate(dateStr)}
+                  onClick={() => selectDay(dateStr)}
                 >
                   <span className="cal-num">{day}</span>
                   {dayEvents.slice(0, 2).map((ev) => (
@@ -261,7 +269,7 @@ export function CalendarPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-slate-200 p-4">
+        <div ref={detailRef} className="bg-white rounded-lg border border-slate-200 p-4" style={{ scrollMarginTop: 12 }}>
           <div className="flex items-center justify-between gap-2 mb-3">
             <h2 className="text-base font-semibold text-slate-900">{formatDate(selectedDate)}</h2>
             <button className="btn-secondary" onClick={() => setShowForm((v) => !v)}>{showForm ? 'Cancel' : '+ Add'}</button>
