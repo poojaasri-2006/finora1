@@ -5,6 +5,7 @@ import { generateAlerts } from '@/domain/alerts/engine';
 import { generateSchedule } from '@/domain/schedule';
 import { addMonths, todayISO } from '@/domain/dates';
 import { requireOrganization } from '@/lib/api';
+import { seedOrganizationDemoData } from '@/lib/demo-seed';
 
 export async function GET() {
   try {
@@ -26,12 +27,28 @@ export async function GET() {
     }
 
     // Get all data for the organization
-    const [cashFlows, obligations, financingAccounts, scenarios] = await Promise.all([
+    let [cashFlows, obligations, financingAccounts, scenarios] = await Promise.all([
       prisma.cashFlowEntry.findMany({ where: { organizationId } }),
       prisma.businessObligation.findMany({ where: { organizationId } }),
       prisma.financingAccount.findMany({ where: { organizationId } }),
       prisma.scenario.findMany({ where: { organizationId }, include: { adjustments: true } }),
     ]);
+
+    // A brand-new workspace looks empty. Seed a starter dataset so the dashboard is
+    // immediately meaningful (this is a demo build — remove for a real production app).
+    if (cashFlows.length === 0 && obligations.length === 0 && financingAccounts.length === 0) {
+      try {
+        await seedOrganizationDemoData(organizationId);
+        [cashFlows, obligations, financingAccounts, scenarios] = await Promise.all([
+          prisma.cashFlowEntry.findMany({ where: { organizationId } }),
+          prisma.businessObligation.findMany({ where: { organizationId } }),
+          prisma.financingAccount.findMany({ where: { organizationId } }),
+          prisma.scenario.findMany({ where: { organizationId }, include: { adjustments: true } }),
+        ]);
+      } catch (seedError) {
+        console.error('Auto demo seed failed:', seedError);
+      }
+    }
 
     // Generate financing schedules
     const allInstallments = [];
