@@ -2439,3 +2439,26 @@ a.d2-dock-item.active { color: #595ef2; }
   .d2-view-viewport { overflow: visible !important; padding: 0 !important; }
   .d2-page-content { display: block !important; }
 }
+
+/* ═══ No scrollbars anywhere (scrolling still works) ═══ */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
+html, body { overflow-x: hidden; }
+
+/* ═══ Mobile rail toggle + spread header + dock animation ═══ */
+.d2-rail-toggle { display: none; }
+@keyframes d2DockIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+@media (max-width: 860px) {
+  .d2-rail-toggle { display: inline-flex; }
+  .d2-header-actions { flex: 1; justify-content: space-between; }
+  .d2-canvas.d2-rail-hidden .d2-sidebar-wrapper { width: 0 !important; overflow: hidden; }
+  .d2-dock-item { animation: d2DockIn 0.4s ease both; }
+  .d2-dock-item:nth-child(1) { animation-delay: 0.02s; }
+  .d2-dock-item:nth-child(2) { animation-delay: 0.06s; }
+  .d2-dock-item:nth-child(3) { animation-delay: 0.1s; }
+  .d2-dock-item:nth-child(4) { animation-delay: 0.14s; }
+  .d2-dock-item:nth-child(5) { animation-delay: 0.18s; }
+  .d2-dock-item:nth-child(6) { animation-delay: 0.22s; }
+  .d2-dock-item:nth-child(7) { animation-delay: 0.26s; }
+  .d2-dock-item:nth-child(8) { animation-delay: 0.3s; }
+}

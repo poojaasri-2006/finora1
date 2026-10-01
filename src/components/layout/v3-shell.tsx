@@ -9,7 +9,7 @@ import '@/components/dashboard/dashboard-v3.css';
 type IconName =
   | 'grid' | 'bank' | 'wallet' | 'file' | 'layers' | 'bell'
   | 'calendar' | 'download' | 'spark' | 'gear' | 'search' | 'logout' | 'plus'
-  | 'sun' | 'moon' | 'command' | 'report' | 'activity' | 'team';
+  | 'sun' | 'moon' | 'command' | 'report' | 'activity' | 'team' | 'menu';
 
 function Icon({ name, size = 19 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -30,6 +30,7 @@ function Icon({ name, size = 19 }: { name: IconName; size?: number }) {
     report: <><path d="M6 2h9l5 5v15H6z" /><path d="M15 2v5h5M9 13h6M9 17h6M9 9h2" /></>,
     activity: <path d="M3 12h4l3 8 4-16 3 8h4" />,
     team: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
+    menu: <><path d="M3 6h18M3 12h18M3 18h18" /></>,
     logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5M21 12H9" /></>,
     plus: <path d="M12 5v14M5 12h14" />,
   };
@@ -61,6 +62,7 @@ export function V3Shell({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState('light');
   const [alertCount, setAlertCount] = useState(0);
   const [query, setQuery] = useState('');
+  const [railHidden, setRailHidden] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState('');
   const [paletteIndex, setPaletteIndex] = useState(0);
@@ -155,7 +157,7 @@ export function V3Shell({ children }: { children: React.ReactNode }) {
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
-    <div className={`d2-canvas ${theme === 'dark' ? 'd2-theme-dark' : ''}`}>
+    <div className={`d2-canvas ${theme === 'dark' ? 'd2-theme-dark' : ''} ${railHidden ? 'd2-rail-hidden' : ''}`}>
       <div className="d2-container">
         <aside className="d2-sidebar-wrapper" aria-label="Main navigation">
           <svg className="d2-sidebar-bg-svg" viewBox="0 0 80 800" preserveAspectRatio="none" aria-hidden="true">
@@ -227,6 +229,16 @@ export function V3Shell({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="d2-header-actions">
+              <button
+                type="button"
+                className="d2-action-icon-btn d2-rail-toggle"
+                onClick={() => setRailHidden((v) => !v)}
+                title="Toggle navigation"
+                aria-label="Toggle navigation"
+              >
+                <Icon name="menu" size={17} />
+              </button>
+
               <button
                 type="button"
                 className="d2-action-icon-btn"
