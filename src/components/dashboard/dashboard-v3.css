@@ -2565,3 +2565,78 @@ html, body { overflow-x: hidden; }
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 .btn-primary:hover, .btn-secondary:hover, .d2-action-icon-btn:hover { transform: translateY(-1px); }
+
+/* ═══ Dark mode: readable text everywhere ═══ */
+.d2-theme-dark .d2-notice strong,
+.d2-theme-dark .d2-payment strong,
+.d2-theme-dark .d2-msg-title,
+.d2-theme-dark .d2-assignment-title,
+.d2-theme-dark .d2-assignment-top-row h4,
+.d2-theme-dark .d2-event-title,
+.d2-theme-dark .d2-task-name,
+.d2-theme-dark .d2-card-title,
+.d2-theme-dark .d2-upcoming-title,
+.d2-theme-dark .d2-meeting-title,
+.d2-theme-dark .d2-gauge-title,
+.d2-theme-dark .d2-feature-card-title,
+.d2-theme-dark .d2-greeting-name,
+.d2-theme-dark .d2-greeting-question,
+.d2-theme-dark .d2-premium-title,
+.d2-theme-dark .d2-banner-title { color: #f1f5f9 !important; }
+
+.d2-theme-dark .d2-notice p,
+.d2-theme-dark .d2-notice small,
+.d2-theme-dark .d2-payment small,
+.d2-theme-dark .d2-payment b,
+.d2-theme-dark .d2-msg-snippet,
+.d2-theme-dark .d2-msg-sender,
+.d2-theme-dark .d2-upcoming-desc,
+.d2-theme-dark .d2-event-sub,
+.d2-theme-dark .d2-task-date,
+.d2-theme-dark .d2-task-duration-col,
+.d2-theme-dark .d2-task-meta-col,
+.d2-theme-dark .d2-gauge-sub,
+.d2-theme-dark .d2-gauge-category,
+.d2-theme-dark .d2-feature-card-desc,
+.d2-theme-dark .d2-greeting-sub,
+.d2-theme-dark .d2-day-name,
+.d2-theme-dark .d2-assignee-info span,
+.d2-theme-dark .d2-panel-kicker { color: #94a3b8 !important; }
+
+.d2-theme-dark .d2-notice,
+.d2-theme-dark .d2-payment,
+.d2-theme-dark .d2-upcoming-card,
+.d2-theme-dark .d2-msg-notification,
+.d2-theme-dark .d2-assignment-card,
+.d2-theme-dark .d2-event-card,
+.d2-theme-dark .d2-task-row,
+.d2-theme-dark .d2-panel,
+.d2-theme-dark .d2-chart-card,
+.d2-theme-dark .d2-gauges-card,
+.d2-theme-dark .d2-board-meeting-card,
+.d2-theme-dark .d2-exposure-grid > div { background: #232c45 !important; color: #e2e8f0; }
+
+.d2-theme-dark .d2-calendar-days span,
+.d2-theme-dark .d2-day-num { color: #cbd5e1 !important; }
+.d2-theme-dark .d2-time-pill { background: #2b3552 !important; color: #cbd5e1 !important; }
+.d2-theme-dark .d2-premium-desc { color: #eeeaff !important; }
+.d2-theme-dark .d2-capacity-sub,
+.d2-theme-dark .d2-capacity-rows > div { color: #e7e4ff !important; }
+
+/* Dark mode: module pages */
+.d2-theme-dark .d2-page-content .bg-white.rounded-lg.border,
+.d2-theme-dark .d2-page-content .rounded-2xl.border.bg-white,
+.d2-theme-dark .d2-page-content .metric-card { background: #232c45 !important; border-color: #334155 !important; }
+.d2-theme-dark .d2-page-content h1,
+.d2-theme-dark .d2-page-content h2,
+.d2-theme-dark .d2-page-content h3,
+.d2-theme-dark .d2-page-content strong,
+.d2-theme-dark .d2-page-content .text-slate-900,
+.d2-theme-dark .d2-page-content label { color: #f1f5f9 !important; }
+.d2-theme-dark .d2-page-content .text-slate-500,
+.d2-theme-dark .d2-page-content .text-slate-600,
+.d2-theme-dark .d2-page-content .text-slate-700 { color: #94a3b8 !important; }
+.d2-theme-dark .d2-page-content .financial-table td { color: #cbd5e1 !important; }
+.d2-theme-dark .d2-page-content .financial-table tr { background: #232c45 !important; border-color: #334155 !important; }
+.d2-theme-dark .d2-page-content .form-input,
+.d2-theme-dark .d2-page-content .form-select { background: #1b2438 !important; border-color: #334155 !important; color: #f1f5f9 !important; }
