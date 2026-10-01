@@ -415,7 +415,8 @@ export function DashboardV3({ initialData = null }) {
             </div>
             <span className="d2-period-pill">{String(data.projection?.periodType || 'monthly').toLowerCase()}</span>
           </div>
-          <div style={{ width: '100%', height: 260 }}>
+          {!m.hasData && <div className="d2-chart-empty">Load your numbers — or click “Load demo data” — to see the projection.</div>}
+          <div style={{ width: '100%', height: 260, display: m.hasData ? 'block' : 'none' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={m.periods} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
                 <defs>

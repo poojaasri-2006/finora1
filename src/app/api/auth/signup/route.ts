@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { hashPassword, createSession, setSessionCookie } from '@/lib/auth';
+import { seedOrganizationDemoData } from '@/lib/demo-seed';
 import { z } from 'zod';
 
 const signupSchema = z.object({
@@ -66,6 +67,13 @@ export async function POST(request: Request) {
 
       return { user, organization };
     });
+
+    // Seed a starter workspace so a new account is immediately useful.
+    try {
+      await seedOrganizationDemoData(result.organization.id);
+    } catch (seedError) {
+      console.error('Signup demo seed failed:', seedError);
+    }
 
     // Create session
     const token = await createSession(result.user.id);

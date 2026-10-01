@@ -2640,3 +2640,7 @@ html, body { overflow-x: hidden; }
 .d2-theme-dark .d2-page-content .financial-table tr { background: #232c45 !important; border-color: #334155 !important; }
 .d2-theme-dark .d2-page-content .form-input,
 .d2-theme-dark .d2-page-content .form-select { background: #1b2438 !important; border-color: #334155 !important; color: #f1f5f9 !important; }
+
+/* Empty chart state */
+.d2-chart-empty { display: flex; align-items: center; justify-content: center; min-height: 220px; text-align: center; color: #94a3b8; font-size: 13px; font-weight: 600; padding: 20px; }
+.d2-theme-dark .d2-chart-empty { color: #64748b; }
