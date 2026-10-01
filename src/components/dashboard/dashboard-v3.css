@@ -2473,3 +2473,20 @@ html, body { overflow-x: hidden; }
   .d2-page-content .cal-cell:has(.cal-chip)::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: #595ef2; }
   .d2-page-content .cal-detail-item { padding: 10px; }
 }
+
+/* ═══ Rail toggle: collapse the sidebar at ANY width ═══ */
+.d2-sidebar-wrapper { transition: width 0.25s ease; }
+.d2-canvas.d2-rail-hidden .d2-sidebar-wrapper { width: 0 !important; min-width: 0 !important; flex: 0 0 0 !important; overflow: hidden !important; }
+
+/* ═══ Mobile dashboard: compact cards, visible charts ═══ */
+@media (max-width: 860px) {
+  .d2-feature-cards { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; }
+  .d2-add-feature-card { min-height: 92px; }
+  .d2-feature-card { padding: 12px; }
+  .d2-feature-illu { margin-bottom: 6px; }
+  .d2-feature-card-title { font-size: 14px; }
+  .d2-feature-card-desc { font-size: 10.5px; }
+  .d2-chart-card, .d2-capacity-card, .d2-panel, .d2-gauges-card, .d2-board-meeting-card { min-width: 0; }
+  .d2-chart-card > div[style*="height"] { min-height: 200px; }
+  .d2-capacity-value { font-size: 28px; }
+}
