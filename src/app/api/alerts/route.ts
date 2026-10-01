@@ -1,22 +1,9 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { requireOrganization } from '@/lib/api';
+import { GET as getDashboard } from '../dashboard/route';
 
 export async function GET() {
-  try {
-    const context = await requireOrganization();
-    if (context instanceof NextResponse) return context;
-
-    const { organizationId } = context;
-
-    const alerts = await prisma.alert.findMany({
-      where: { organizationId, isDismissed: false },
-      orderBy: [{ severity: 'desc' }, { createdAt: 'desc' }],
-      take: 50,
-    });
-
-    return NextResponse.json({ alerts });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch alerts' }, { status: 500 });
-  }
+  const response = await getDashboard();
+  if (!response.ok) return response;
+  const data = await response.json();
+  return NextResponse.json({ alerts: data.alerts });
 }

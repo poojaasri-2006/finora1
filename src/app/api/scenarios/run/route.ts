@@ -4,10 +4,13 @@ import { generateProjection } from '@/domain/projection/engine';
 import { generateSchedule } from '@/domain/schedule';
 import { addMonths, todayISO } from '@/domain/dates';
 import { calculateSafeBorrowingCapacity } from '@/domain/capacity/safe-borrowing';
+import { requireOrganization } from '@/lib/api';
 
 export async function POST() {
   try {
-    const org = await prisma.organization.findFirst({ where: { id: 'demo-org' } });
+    const context = await requireOrganization();
+    if (context instanceof NextResponse) return context;
+    const org = await prisma.organization.findFirst({ where: { id: context.organizationId } });
     if (!org) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
@@ -33,12 +36,12 @@ export async function POST() {
         feesCents: account.feesCents,
         gracePeriodMonths: account.gracePeriodMonths,
       });
-      allInstallments.push(...schedule);
+      allInstallments.push(...schedule.map((installment) => ({ ...installment, financingAccountId: account.id })));
     }
 
     const startDate = todayISO();
     const endDate = addMonths(startDate, 12);
-    const openingCashCents = 7500000;
+    const openingCashCents = org.currentCashCents;
 
     const results = [];
 

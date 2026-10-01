@@ -1,19 +1,60 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { formatMoney } from '@/domain/money';
 import { useAuth } from '@/components/auth/auth-provider';
 import { useToast } from '@/components/ui/toast-provider';
 import { fetchJson } from '@/lib/fetch';
 
+type NovaStatus = {
+  configured: boolean;
+  connected: boolean;
+  reason?: 'missing_key' | 'unauthorized' | 'unavailable';
+};
+
 export function SettingsPage() {
-  const { user } = useAuth();
+  const { logout } = useAuth();
   const { addToast } = useToast();
+  const router = useRouter();
   const [org, setOrg] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [novaStatus, setNovaStatus] = useState<NovaStatus | null>(null);
+  const [checkingNova, setCheckingNova] = useState(false);
+  const [auditEvents, setAuditEvents] = useState<{ id: string; action: string; entityType: string; createdAt: string }[] | null>(null);
+  const [loadingAudit, setLoadingAudit] = useState(false);
+
+  async function showAuditLog() {
+    if (auditEvents) { setAuditEvents(null); return; }
+    setLoadingAudit(true);
+    try {
+      const data = await fetchJson<{ events: { id: string; action: string; entityType: string; createdAt: string }[] }>('/api/audit');
+      setAuditEvents(data.events);
+    } catch (cause) {
+      addToast('error', 'Could not load audit log', cause instanceof Error ? cause.message : undefined);
+    } finally {
+      setLoadingAudit(false);
+    }
+  }
+
+  async function checkNova() {
+    setCheckingNova(true);
+    try {
+      const status = await fetchJson<NovaStatus>('/api/integrations/nova', {
+        retries: 0,
+        timeout: 12000,
+      });
+      setNovaStatus(status);
+    } catch {
+      setNovaStatus({ configured: true, connected: false, reason: 'unavailable' });
+    } finally {
+      setCheckingNova(false);
+    }
+  }
 
   useEffect(() => {
     async function loadSettings() {
@@ -53,6 +94,7 @@ export function SettingsPage() {
       if (res.ok) {
         setMessage('Settings saved successfully');
         addToast('success', 'Settings saved');
+        router.refresh();
       } else {
         setMessage('Failed to save settings');
         addToast('error', 'Failed to save settings');
@@ -110,6 +152,29 @@ export function SettingsPage() {
         <div className="bg-green-50 text-green-700 p-3 rounded-md">{message}</div>
       )}
 
+      <section className="bg-white rounded-lg border border-slate-200 p-6" aria-label="Aczen Nova API">
+        <h2 className="text-lg font-semibold text-slate-900">Aczen Nova API</h2>
+        <p className="text-sm text-slate-600 mt-2">
+          Add your team key as <code>NOVA_API_KEY</code> in the server environment. The key is never sent to this page.
+        </p>
+        <div className="flex items-center gap-3 mt-4">
+          <button type="button" onClick={checkNova} disabled={checkingNova} className="btn-secondary">
+            {checkingNova ? 'Checking...' : 'Check connection'}
+          </button>
+          {novaStatus && (
+            <span role="status" className={novaStatus.connected ? 'text-sm text-green-700' : 'text-sm text-amber-700'}>
+              {novaStatus.connected
+                ? 'Connected to Nova'
+                : novaStatus.reason === 'missing_key'
+                  ? 'NOVA_API_KEY is not configured on the server'
+                  : novaStatus.reason === 'unauthorized'
+                    ? 'Nova rejected the configured key'
+                    : 'Nova is temporarily unavailable'}
+            </span>
+          )}
+        </div>
+      </section>
+
       <form onSubmit={handleSave} className="bg-white rounded-lg border border-slate-200 p-6 space-y-6">
         <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Organization Profile</h2>
@@ -121,11 +186,17 @@ export function SettingsPage() {
             <div>
               <label className="form-label">Base Currency</label>
               <select name="currency" defaultValue={org.baseCurrency} className="form-select">
+                {!['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR', 'SGD', 'AED'].includes(org.baseCurrency) && (
+                  <option value={org.baseCurrency}>{org.baseCurrency}</option>
+                )}
+                <option value="INR">INR — Indian Rupee</option>
                 <option value="USD">USD — US Dollar</option>
                 <option value="EUR">EUR — Euro</option>
                 <option value="GBP">GBP — British Pound</option>
                 <option value="CAD">CAD — Canadian Dollar</option>
                 <option value="AUD">AUD — Australian Dollar</option>
+                <option value="SGD">SGD — Singapore Dollar</option>
+                <option value="AED">AED — UAE Dirham</option>
               </select>
             </div>
           </div>
@@ -183,10 +254,11 @@ export function SettingsPage() {
           <p className="text-sm text-slate-500 mb-4">
             Manage user access and permissions for your organization.
           </p>
-          <div className="bg-slate-50 rounded-md p-4">
+            <div className="bg-slate-50 rounded-md p-4 flex items-center justify-between gap-3">
             <p className="text-sm text-slate-600">
-              User management is not yet implemented. All users currently have full access.
+              Manage teammates and their roles on the Team page.
             </p>
+            <Link href="/team" className="btn-secondary">Open Team</Link>
           </div>
         </div>
 
@@ -195,13 +267,18 @@ export function SettingsPage() {
           <p className="text-sm text-slate-500 mb-4">
             View a log of all important financial changes.
           </p>
-          <button type="button" className="btn-secondary">View Audit Log</button>
+          <button type="button" onClick={showAuditLog} disabled={loadingAudit} className="btn-secondary">{loadingAudit ? 'Loading...' : auditEvents ? 'Hide Audit Log' : 'View Audit Log'}</button>
+          {auditEvents && <div className="mt-4 space-y-2">
+            {auditEvents.length === 0 ? <p className="text-sm text-slate-500">No recorded changes yet.</p> :
+              auditEvents.map((event) => <div key={event.id} className="flex flex-wrap justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"><span><strong>{event.action}</strong> · {event.entityType}</span><time className="text-slate-500">{new Date(event.createdAt).toLocaleString()}</time></div>)}
+          </div>}
         </div>
 
         <div className="flex gap-2">
           <button type="submit" disabled={saving} className="btn-primary">
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
+          <button type="button" onClick={logout} className="btn-secondary">Sign out</button>
         </div>
       </form>
     </div>

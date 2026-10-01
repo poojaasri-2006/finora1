@@ -1,14 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { formatMoney } from '@/domain/money';
 import { formatDate } from '@/domain/dates';
 import { EmptyState } from '@/components/ui/empty-state';
+import { DeleteButton } from '@/components/ui/delete-button';
 import { useAuth } from '@/components/auth/auth-provider';
+import { canCreate, canDelete } from '@/lib/roles';
+import { useOrganizationCurrency } from '@/lib/use-organization-currency';
 import type { FinancingAccount } from '@/domain/types';
 
 export function FinancingPage() {
   const { user } = useAuth();
+  const mayCreate = canCreate(user?.role);
+  const mayDelete = canDelete(user?.role);
+  const currency = useOrganizationCurrency();
   const [accounts, setAccounts] = useState<FinancingAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,11 +37,17 @@ export function FinancingPage() {
       });
   }, []);
 
+  async function deleteAccount(id: string, name: string) {
+    const response = await fetch(`/api/financing/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Could not delete financing account');
+    setAccounts((current) => current.filter((account) => account.id !== id));
+  }
+
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 bg-slate-200 rounded w-64" />
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
           <div className="space-y-3 p-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-16 bg-slate-100 rounded" />
@@ -61,9 +74,11 @@ export function FinancingPage() {
           <h1 className="text-2xl font-bold text-slate-900">Financing Accounts</h1>
           <p className="text-slate-500 mt-1">Manage loans, credit facilities, and other financing</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary">
-          {showForm ? 'Cancel' : '+ Add Financing'}
-        </button>
+        {mayCreate && (
+          <button onClick={() => setShowForm(!showForm)} className="btn-primary">
+            {showForm ? 'Cancel' : '+ Add Financing'}
+          </button>
+        )}
       </div>
 
       {showForm && <FinancingForm onComplete={() => { setShowForm(false); window.location.reload(); }} />}
@@ -73,10 +88,9 @@ export function FinancingPage() {
           title="No financing accounts yet"
           description="Add your first loan or credit facility to start tracking repayments."
           actions={[{ label: 'Add your first loan', href: '#add' }]}
-          icon="🏦"
         />
       ) : (
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
           <table className="financial-table">
             <thead>
               <tr>
@@ -88,16 +102,17 @@ export function FinancingPage() {
                 <th className="text-right">Rate</th>
                 <th>Maturity</th>
                 <th>Status</th>
+                {mayDelete && <th className="text-right">Actions</th>}
               </tr>
             </thead>
             <tbody>
               {accounts.map((account) => (
                 <tr key={account.id}>
-                  <td className="font-medium text-slate-900">{account.name}</td>
+                  <td className="font-medium text-slate-900"><Link href={`/financing/${account.id}`} className="text-indigo-600 hover:underline">{account.name}</Link></td>
                   <td className="text-slate-600">{account.lender}</td>
                   <td><span className="badge-neutral">{account.type.replace(/_/g, ' ')}</span></td>
                   <td className="text-slate-600">{account.repaymentMethod.replace(/_/g, ' ')}</td>
-                  <td className="text-right font-medium">{formatMoney(account.outstandingPrincipalCents, 'USD')}</td>
+                  <td className="text-right font-medium">{formatMoney(account.outstandingPrincipalCents, currency)}</td>
                   <td className="text-right">{(account.annualInterestRate * 100).toFixed(2)}%</td>
                   <td className="text-slate-600">{formatDate(account.maturityDate)}</td>
                   <td>
@@ -105,6 +120,11 @@ export function FinancingPage() {
                       {account.status}
                     </span>
                   </td>
+                  {mayDelete && (
+                    <td className="text-right">
+                      <DeleteButton label={`Delete ${account.name}`} confirmText={`Delete financing account "${account.name}"? Its schedule and installments will be removed.`} onDelete={() => deleteAccount(account.id, account.name)} />
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

@@ -75,6 +75,14 @@ See [.env.example](.env.example) for all configuration options.
 | `JWT_SECRET` | Secret for session tokens (change in production!) | `cashshield-dev-secret-change-in-production` |
 | `NEXT_PUBLIC_APP_NAME` | Application name | `CashShield` |
 | `NEXT_PUBLIC_APP_URL` | Application URL | `http://localhost:3000` |
+| `NOVA_API_KEY` | Team's Aczen Nova API key, used only by server-side code | Unset |
+| `NOVA_ORGANIZATION_ID` | Organization allowed to view this team key's books; required if the deployment has multiple organizations | Unset |
+
+### Aczen Nova API
+
+The team lead can generate a key at [Aczen Nova](https://www.aczen.in/nova-api). Add it to the local `.env` file as `NOVA_API_KEY=...` and set the same secret in the server deployment environment. Do not use a `NEXT_PUBLIC_` variable or commit the key. The Settings page checks the connection through Finora's authenticated backend. The check calls Nova's `/me` endpoint and only returns connection status to the browser.
+
+The **Nova Snapshot** page reads invoices, purchase bills, loan schedules, payroll runs, and statutory dues. It pages through all records and groups outstanding amounts into 13 weeks from Nova's fixed sample-data date, 2026-09-29. It is a separate planning view and does not mix INR sample data into an organization's existing dashboard projections or overwrite manual records. Access is limited to organization owners and admins. For a deployment with multiple organizations, set `NOVA_ORGANIZATION_ID` to the intended organization's ID (visible in the Settings API response).
 
 ## Database
 

@@ -82,7 +82,7 @@ function generateRepaymentDueAlerts(context: AlertContext, today: ISODate): Aler
     // Schedule entries are always pending (no status field)
     if (inst.dueDate >= today && inst.dueDate <= sevenDaysFromNow) {
       const daysUntil = daysBetween(today, inst.dueDate);
-      const instId = `${inst.number}-${inst.dueDate}`;
+      const instId = `${inst.financingAccountId ?? 'schedule'}-${inst.number}-${inst.dueDate}`;
       alerts.push({
         id: `alert-repay-${instId}`,
         organizationId: context.organizationId,
@@ -226,7 +226,7 @@ function generateBalloonPaymentAlerts(context: AlertContext, today: ISODate): Al
     if (inst.principalRepaymentCents > inst.interestCents * 3) {
       if (inst.dueDate >= today && inst.dueDate <= sixtyDaysFromNow) {
         const daysUntil = daysBetween(today, inst.dueDate);
-        const instId = `${inst.number}-${inst.dueDate}`;
+        const instId = `${inst.financingAccountId ?? 'schedule'}-${inst.number}-${inst.dueDate}`;
         alerts.push({
           id: `alert-balloon-${instId}`,
           organizationId: context.organizationId,
@@ -261,7 +261,7 @@ function generateOverdueInstallmentAlerts(context: AlertContext, today: ISODate)
   for (const inst of context.installments) {
     if (inst.dueDate < today) {
       const daysOverdue = daysBetween(inst.dueDate, today);
-      const instId = `${inst.number}-${inst.dueDate}`;
+      const instId = `${inst.financingAccountId ?? 'schedule'}-${inst.number}-${inst.dueDate}`;
       alerts.push({
         id: `alert-overdue-${instId}`,
         organizationId: context.organizationId,

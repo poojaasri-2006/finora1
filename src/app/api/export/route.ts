@@ -3,13 +3,17 @@ import { prisma } from '@/lib/db';
 import { generateSchedule } from '@/domain/schedule';
 import { generateProjection } from '@/domain/projection/engine';
 import { addMonths, todayISO } from '@/domain/dates';
+import { requireOrganization } from '@/lib/api';
+import { GET as getDashboard } from '../dashboard/route';
 
 export async function GET(request: Request) {
   try {
+    const context = await requireOrganization();
+    if (context instanceof NextResponse) return context;
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'projection';
 
-    const org = await prisma.organization.findFirst({ where: { id: 'demo-org' } });
+    const org = await prisma.organization.findFirst({ where: { id: context.organizationId } });
     if (!org) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
@@ -69,7 +73,7 @@ export async function GET(request: Request) {
         periodType: org.defaultProjectionPeriod as any,
         startDate,
         endDate,
-        openingCashCents: 7500000,
+        openingCashCents: org.currentCashCents,
         minimumReserveCents: org.minimumCashReserveCents,
         cashFlows: cashFlows as any,
         obligations: obligations as any,
@@ -81,12 +85,25 @@ export async function GET(request: Request) {
       for (const p of projection.periods) {
         csv += `${p.periodStart},${p.periodEnd},${p.openingCashCents},${p.inflowsCents},${p.totalOutflowsCents},${p.financingPaymentsCents},${p.closingCashCents},${p.minimumReserveCents},${p.liquidityBufferCents},${p.cashShortfallCents},${p.isPressured}\n`;
       }
-    } else if (type === 'alerts') {
-      const alerts = await prisma.alert.findMany({
+    } else if (type === 'scenarios') {
+      const scenarios = await prisma.scenario.findMany({
         where: { organizationId: org.id },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
+        include: { adjustments: true },
       });
+      csv = 'Scenario,Type,Description,Adjustment,Value\n';
+      for (const scenario of scenarios) {
+        if (scenario.adjustments.length === 0) {
+          csv += `"${scenario.name}","${scenario.type}","${scenario.description}",,\n`;
+        }
+        for (const adjustment of scenario.adjustments) {
+          csv += `"${scenario.name}","${scenario.type}","${scenario.description}","${adjustment.type}",${adjustment.value}\n`;
+        }
+      }
+    } else if (type === 'alerts') {
+      const dashboardResponse = await getDashboard();
+      if (!dashboardResponse.ok) return dashboardResponse;
+      const dashboardData = await dashboardResponse.json();
+      const alerts = dashboardData.alerts as { createdAt: string; severity: string; type: string; title: string; message: string }[];
 
       csv = 'Date,Severity,Type,Title,Message\n';
       for (const alert of alerts) {

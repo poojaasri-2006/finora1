@@ -51,15 +51,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 : 'border-blue-200'
             }`}
           >
-            <span className="text-lg">
-              {toast.type === 'success'
-                ? '✓'
-                : toast.type === 'error'
-                ? '✕'
-                : toast.type === 'warning'
-                ? '⚠'
-                : 'ℹ'}
-            </span>
+            <span
+              className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                toast.type === 'success'
+                  ? 'bg-green-500'
+                  : toast.type === 'error'
+                  ? 'bg-red-500'
+                  : toast.type === 'warning'
+                  ? 'bg-yellow-500'
+                  : 'bg-blue-500'
+              }`}
+            />
             <div className="flex-1">
               <p className="font-medium text-slate-900 text-sm">{toast.title}</p>
               {toast.message && (
@@ -68,9 +70,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </div>
             <button
               onClick={() => removeToast(toast.id)}
+              aria-label="Dismiss"
               className="text-slate-400 hover:text-slate-600"
             >
-              ✕
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
             </button>
           </div>
         ))}

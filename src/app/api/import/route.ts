@@ -1,15 +1,24 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { parseMoneyToCents } from '@/domain/money';
+import { requireOrganization, checkRole, ROLE_PERMISSIONS } from '@/lib/api';
 
 export async function POST(request: Request) {
   try {
+    const context = await requireOrganization();
+    if (context instanceof NextResponse) return context;
+    if (!checkRole(context.role, ROLE_PERMISSIONS.CREATE_RECORDS)) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const type = formData.get('type') as string;
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+    if (type !== 'cash-flows') {
+      return NextResponse.json({ error: 'Only cash flow CSV import is supported' }, { status: 400 });
     }
 
     const text = await file.text();
@@ -40,7 +49,7 @@ export async function POST(request: Request) {
 
           await prisma.cashFlowEntry.create({
             data: {
-              organizationId: 'demo-org',
+              organizationId: context.organizationId,
               name: row['name'] || row['description'] || 'Imported Entry',
               category: (row['category'] || 'OTHER_RECURRING').toUpperCase(),
               type: (row['type'] || 'OUTFLOW').toUpperCase() as any,
@@ -60,7 +69,8 @@ export async function POST(request: Request) {
     // Create audit event
     await prisma.auditEvent.create({
       data: {
-        organizationId: 'demo-org',
+        organizationId: context.organizationId,
+        userId: context.userId,
         action: 'IMPORT',
         entityType: 'CashFlowEntry',
         entityId: 'batch',

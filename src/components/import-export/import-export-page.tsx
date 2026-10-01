@@ -75,19 +75,9 @@ export function ImportExportPage() {
         <div className="bg-white rounded-lg border border-slate-200 p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Import CSV</h2>
           <p className="text-sm text-slate-500 mb-4">
-            Import cash transactions, revenue, expenses, loans, or obligations from a CSV file.
+            Import cash flow entries from a CSV file with name, amount, category, type, recurrence and date columns.
           </p>
           <div className="space-y-4">
-            <div>
-              <label className="form-label">Data Type</label>
-              <select className="form-select" id="import-type">
-                <option value="cash-flows">Cash Transactions</option>
-                <option value="revenue">Revenue</option>
-                <option value="expenses">Expenses</option>
-                <option value="loans">Loans</option>
-                <option value="obligations">Obligations</option>
-              </select>
-            </div>
             <div>
               <label className="form-label">CSV File</label>
               <input
@@ -115,16 +105,16 @@ export function ImportExportPage() {
           </p>
           <div className="space-y-2">
             <button onClick={() => handleExport('schedule')} disabled={exporting} className="btn-secondary w-full justify-start">
-              📊 Repayment Schedule
+              Repayment Schedule
             </button>
             <button onClick={() => handleExport('projection')} disabled={exporting} className="btn-secondary w-full justify-start">
-              📈 Cash-Flow Projection
+              Cash-Flow Projection
             </button>
             <button onClick={() => handleExport('scenarios')} disabled={exporting} className="btn-secondary w-full justify-start">
-              🔮 Scenario Comparison
+              Scenario Comparison
             </button>
             <button onClick={() => handleExport('alerts')} disabled={exporting} className="btn-secondary w-full justify-start">
-              🔔 Alert Report
+              Alert Report
             </button>
           </div>
         </div>

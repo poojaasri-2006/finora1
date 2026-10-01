@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireOrganization, ROLE_PERMISSIONS, checkRole } from '@/lib/api';
+import { addDays, addMonths, todayISO } from '@/domain/dates';
 
 /**
  * Load demo data for the current organization.
@@ -29,6 +30,9 @@ export async function POST() {
       );
     }
 
+    const today = todayISO();
+    const recentMonth = addMonths(today, -1);
+
     // Create demo financing accounts
     const loan1 = await prisma.financingAccount.create({
       data: {
@@ -40,8 +44,8 @@ export async function POST() {
         outstandingPrincipalCents: 15000000,
         annualInterestRate: 0.075,
         interestType: 'FIXED',
-        startDate: '2024-01-15',
-        maturityDate: '2027-01-15',
+        startDate: recentMonth,
+        maturityDate: addMonths(today, 24),
         paymentFrequency: 'MONTHLY',
         repaymentMethod: 'AMORTIZING',
         paymentAmountCents: 463000,
@@ -62,8 +66,8 @@ export async function POST() {
         outstandingPrincipalCents: 3500000,
         annualInterestRate: 0.095,
         interestType: 'VARIABLE',
-        startDate: '2023-06-01',
-        maturityDate: '2026-06-01',
+        startDate: recentMonth,
+        maturityDate: addMonths(today, 18),
         paymentFrequency: 'MONTHLY',
         repaymentMethod: 'INTEREST_ONLY',
         paymentAmountCents: 27500,
@@ -76,15 +80,15 @@ export async function POST() {
 
     // Create demo cash flow entries
     const cashFlows = [
-      { name: 'Product Sales', category: 'REVENUE', type: 'INFLOW', amountCents: 8500000, recurrence: 'MONTHLY', startDate: '2025-01-01', status: 'PROJECTED' },
-      { name: 'Service Revenue', category: 'REVENUE', type: 'INFLOW', amountCents: 2500000, recurrence: 'MONTHLY', startDate: '2025-01-01', status: 'PROJECTED' },
-      { name: 'Payroll', category: 'PAYROLL', type: 'OUTFLOW', amountCents: 4500000, recurrence: 'MONTHLY', startDate: '2025-01-01', status: 'PROJECTED' },
-      { name: 'Raw Materials', category: 'VENDOR_PAYMENTS', type: 'OUTFLOW', amountCents: 3200000, recurrence: 'MONTHLY', startDate: '2025-01-01', status: 'PROJECTED' },
-      { name: 'Facility Rent', category: 'RENT', type: 'OUTFLOW', amountCents: 1200000, recurrence: 'MONTHLY', startDate: '2025-01-01', status: 'PROJECTED' },
-      { name: 'Utilities', category: 'UTILITIES', type: 'OUTFLOW', amountCents: 180000, recurrence: 'MONTHLY', startDate: '2025-01-01', status: 'PROJECTED' },
-      { name: 'Insurance', category: 'INSURANCE', type: 'OUTFLOW', amountCents: 90000, recurrence: 'MONTHLY', startDate: '2025-01-01', status: 'PROJECTED' },
-      { name: 'Quarterly Tax Payment', category: 'TAXES', type: 'OUTFLOW', amountCents: 800000, recurrence: 'QUARTERLY', startDate: '2025-03-15', status: 'PROJECTED' },
-      { name: 'Marketing', category: 'MARKETING', type: 'OUTFLOW', amountCents: 150000, recurrence: 'MONTHLY', startDate: '2025-01-01', status: 'PROJECTED' },
+      { name: 'Product Sales', category: 'REVENUE', type: 'INFLOW', amountCents: 8500000, recurrence: 'MONTHLY', startDate: recentMonth, status: 'PROJECTED' },
+      { name: 'Service Revenue', category: 'REVENUE', type: 'INFLOW', amountCents: 2500000, recurrence: 'MONTHLY', startDate: recentMonth, status: 'PROJECTED' },
+      { name: 'Payroll', category: 'PAYROLL', type: 'OUTFLOW', amountCents: 4500000, recurrence: 'MONTHLY', startDate: recentMonth, status: 'PROJECTED' },
+      { name: 'Raw Materials', category: 'VENDOR_PAYMENTS', type: 'OUTFLOW', amountCents: 3200000, recurrence: 'MONTHLY', startDate: recentMonth, status: 'PROJECTED' },
+      { name: 'Facility Rent', category: 'RENT', type: 'OUTFLOW', amountCents: 1200000, recurrence: 'MONTHLY', startDate: recentMonth, status: 'PROJECTED' },
+      { name: 'Utilities', category: 'UTILITIES', type: 'OUTFLOW', amountCents: 180000, recurrence: 'MONTHLY', startDate: recentMonth, status: 'PROJECTED' },
+      { name: 'Insurance', category: 'INSURANCE', type: 'OUTFLOW', amountCents: 90000, recurrence: 'MONTHLY', startDate: recentMonth, status: 'PROJECTED' },
+      { name: 'Quarterly Tax Payment', category: 'TAXES', type: 'OUTFLOW', amountCents: 800000, recurrence: 'QUARTERLY', startDate: addDays(today, 12), status: 'PROJECTED' },
+      { name: 'Marketing', category: 'MARKETING', type: 'OUTFLOW', amountCents: 150000, recurrence: 'MONTHLY', startDate: recentMonth, status: 'PROJECTED' },
     ];
 
     for (const cf of cashFlows) {
@@ -95,10 +99,10 @@ export async function POST() {
 
     // Create demo obligations
     const obligations = [
-      { name: 'Monthly Payroll', type: 'PAYROLL', amountCents: 4500000, dueDate: '2025-02-01', recurrence: 'MONTHLY' },
-      { name: 'Raw Materials Supplier', type: 'VENDOR', amountCents: 3200000, dueDate: '2025-02-05', recurrence: 'MONTHLY' },
-      { name: 'Facility Rent', type: 'RENT', amountCents: 1200000, dueDate: '2025-02-01', recurrence: 'MONTHLY' },
-      { name: 'Q1 Tax Payment', type: 'TAX', amountCents: 800000, dueDate: '2025-03-15', recurrence: 'QUARTERLY' },
+      { name: 'Monthly Payroll', type: 'PAYROLL', amountCents: 4500000, dueDate: addDays(today, 4), recurrence: 'MONTHLY' },
+      { name: 'Raw Materials Supplier', type: 'VENDOR', amountCents: 3200000, dueDate: addDays(today, 8), recurrence: 'MONTHLY' },
+      { name: 'Facility Rent', type: 'RENT', amountCents: 1200000, dueDate: addDays(today, 13), recurrence: 'MONTHLY' },
+      { name: 'Quarterly Tax Payment', type: 'TAX', amountCents: 800000, dueDate: addDays(today, 20), recurrence: 'QUARTERLY' },
     ];
 
     for (const ob of obligations) {
@@ -114,6 +118,30 @@ export async function POST() {
         name: 'Base Case',
         type: 'BASE',
         description: 'Current financial position with no adjustments',
+      },
+    });
+    await prisma.scenario.create({
+      data: {
+        organizationId,
+        name: 'Slower sales',
+        type: 'MILD_DOWNSIDE',
+        description: 'Revenue declines by 12% while costs rise by 5%',
+        adjustments: { create: [
+          { type: 'REVENUE_DECLINE', value: 0.12, isPercentage: true, description: 'Slower customer receipts' },
+          { type: 'EXPENSE_INCREASE', value: 0.05, isPercentage: true, description: 'Higher operating costs' },
+        ] },
+      },
+    });
+    await prisma.scenario.create({
+      data: {
+        organizationId,
+        name: 'Severe downside',
+        type: 'SEVERE_DOWNSIDE',
+        description: 'Revenue declines by 25% while costs rise by 12%',
+        adjustments: { create: [
+          { type: 'REVENUE_DECLINE', value: 0.25, isPercentage: true, description: 'Major sales slowdown' },
+          { type: 'EXPENSE_INCREASE', value: 0.12, isPercentage: true, description: 'Higher operating costs' },
+        ] },
       },
     });
 
@@ -134,6 +162,7 @@ export async function POST() {
       loans: 2,
       cashFlows: cashFlows.length,
       obligations: obligations.length,
+      scenarios: 3,
     });
   } catch (error) {
     console.error('Demo data error:', error);

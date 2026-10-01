@@ -47,7 +47,7 @@ export async function GET() {
         feesCents: account.feesCents,
         gracePeriodMonths: account.gracePeriodMonths,
       });
-      allInstallments.push(...schedule);
+      allInstallments.push(...schedule.map((installment) => ({ ...installment, financingAccountId: account.id })));
     }
 
     // Generate projection
@@ -87,6 +87,8 @@ export async function GET() {
       projection,
       alerts,
       obligations,
+      cashFlows,
+      financingAccounts,
       installments: allInstallments,
       currency: org.baseCurrency,
       minimumReserveCents: org.minimumCashReserveCents,

@@ -28,6 +28,7 @@ export interface ScheduleParams {
 }
 
 export interface ScheduleEntry {
+  financingAccountId?: string;
   number: number;
   dueDate: ISODate;
   openingPrincipalCents: Cents;
