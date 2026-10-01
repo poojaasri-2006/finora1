@@ -2547,3 +2547,21 @@ html, body { overflow-x: hidden; }
   .d2-exposure-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .d2-exposure-cats { grid-template-columns: 1fr; }
 }
+
+/* ═══ Charts: fill the card and stay centered ═══ */
+.d2-chart-card > div, .d2-page-content .recharts-responsive-container { width: 100% !important; margin: 0 auto; }
+.d2-chart-card svg, .d2-page-content .recharts-wrapper { display: block; margin: 0 auto; }
+
+/* ═══ Module pages: animate sections in ═══ */
+@keyframes d2RiseIn2 { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.d2-page-content .space-y-6 > * { animation: d2RiseIn2 0.35s ease both; }
+.d2-page-content .space-y-6 > *:nth-child(2) { animation-delay: 0.05s; }
+.d2-page-content .space-y-6 > *:nth-child(3) { animation-delay: 0.1s; }
+.d2-page-content .space-y-6 > *:nth-child(4) { animation-delay: 0.15s; }
+.d2-page-content .space-y-6 > *:nth-child(5) { animation-delay: 0.2s; }
+
+/* ═══ Smooth transitions everywhere ═══ */
+.d2-dock-item, .d2-nav-item, .btn-primary, .btn-secondary, .metric-card, .d2-action-icon-btn, .d2-signout-btn {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+.btn-primary:hover, .btn-secondary:hover, .d2-action-icon-btn:hover { transform: translateY(-1px); }
