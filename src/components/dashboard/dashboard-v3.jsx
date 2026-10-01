@@ -122,7 +122,20 @@ export function DashboardV3({ initialData = null }) {
       });
     } catch { capacity = null; }
 
-    return { currency, money, alerts, installments, obligations, upcomingInstallments, upcomingObligations, repayments30, obligations30, next30, payments, minimumReserve, reservePct, dscr, dscrPct, pressured, week, hasData, periods, capacity, openingCashCents: data.openingCashCents || 0, cashFloor: data.projection?.summary?.minimumCashCents || 0, orgName: data.organization?.name || 'there' };
+    const financing = data.financingAccounts || [];
+    const totalOutstanding = financing.reduce((s, a) => s + a.outstandingPrincipalCents, 0);
+    const pendingObligations = obligations.filter((o) => o.status === 'PENDING');
+    const totalPending = pendingObligations.reduce((s, o) => s + o.amountCents, 0);
+    const in90 = addDays(today, 90);
+    const next90 = pendingObligations.filter((o) => o.dueDate <= in90).reduce((s, o) => s + o.amountCents, 0)
+      + installments.filter((i) => i.dueDate >= today && i.dueDate <= in90).reduce((s, i) => s + i.totalPaymentCents, 0);
+    const catMap = {};
+    for (const o of pendingObligations) { catMap[o.type] = (catMap[o.type] || 0) + o.amountCents; }
+    const maxCat = Math.max(1, ...Object.values(catMap));
+    const exposureCategories = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 5)
+      .map(([type, amount]) => ({ type: String(type).replace(/_/g, ' ').toLowerCase(), amount, pct: Math.round((amount / maxCat) * 100) }));
+
+    return { currency, money, alerts, installments, obligations, upcomingInstallments, upcomingObligations, repayments30, obligations30, next30, payments, minimumReserve, reservePct, dscr, dscrPct, pressured, week, hasData, periods, capacity, totalOutstanding, totalPending, next90, exposureCategories, openingCashCents: data.openingCashCents || 0, cashFloor: data.projection?.summary?.minimumCashCents || 0, orgName: data.organization?.name || 'there' };
   }, [data]);
 
   if (loading) {
@@ -433,6 +446,33 @@ export function DashboardV3({ initialData = null }) {
           </div>
           <Link href="/scenarios" className="d2-premium-btn" style={{ textDecoration: 'none' }}>Test in scenarios</Link>
           <p className="d2-capacity-note">Estimate at 8% over 36 months, 125% coverage. Not financial advice.</p>
+        </div>
+      </motion.section>
+
+      <motion.section className="d2-exposure" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.24 }}>
+        <div className="d2-panel d2-exposure-panel">
+          <div className="d2-card-header">
+            <div>
+              <p className="d2-panel-kicker">TOTAL EXPOSURE</p>
+              <h3 className="d2-card-title">Financial exposure dashboard</h3>
+            </div>
+            <Link href="/obligations" className="d2-card-header-btn"><span>Obligations</span></Link>
+          </div>
+          <div className="d2-exposure-grid">
+            <div><span>Outstanding debt</span><strong>{m.money(m.totalOutstanding)}</strong></div>
+            <div><span>Pending obligations</span><strong>{m.money(m.totalPending)}</strong></div>
+            <div><span>Repayments · 90 days</span><strong>{m.money(m.next90)}</strong></div>
+            <div><span>Total exposure</span><strong className="d2-exposure-total">{m.money(m.totalOutstanding + m.totalPending)}</strong></div>
+          </div>
+          <div className="d2-exposure-cats">
+            {m.exposureCategories.length === 0 && <p className="d2-empty-note">No pending obligations to break down.</p>}
+            {m.exposureCategories.map((c) => (
+              <div key={c.type} className="d2-exposure-cat">
+                <div className="d2-exposure-cat-head"><span>{c.type}</span><strong>{m.money(c.amount)}</strong></div>
+                <div className="d2-exposure-bar"><span style={{ width: c.pct + '%' }} /></div>
+              </div>
+            ))}
+          </div>
         </div>
       </motion.section>
 

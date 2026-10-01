@@ -100,6 +100,30 @@ export function FinancingDetail({ id }: { id: string }) {
     Balance: i.closingPrincipalCents / 100,
   }));
 
+  const methodLabels: Record<string, string> = { AMORTIZING: 'Amortizing', EQUAL_PRINCIPAL: 'Equal principal', INTEREST_ONLY: 'Interest only', BULLET: 'Bullet' };
+  const comparison = (['AMORTIZING', 'EQUAL_PRINCIPAL', 'INTEREST_ONLY', 'BULLET'] as const).map((method) => {
+    try {
+      const s = generateSchedule({
+        principalCents: account.outstandingPrincipalCents,
+        annualRate: account.annualInterestRate,
+        startDate: account.startDate,
+        maturityDate: account.maturityDate,
+        frequency: account.paymentFrequency,
+        repaymentMethod: method,
+        feesCents: account.feesCents,
+        gracePeriodMonths: account.gracePeriodMonths,
+      });
+      return {
+        method,
+        first: s[0]?.totalPaymentCents ?? 0,
+        interest: s.reduce((sum, x) => sum + x.interestCents, 0),
+        total: s.reduce((sum, x) => sum + x.totalPaymentCents, 0),
+      };
+    } catch {
+      return { method, first: 0, interest: 0, total: 0 };
+    }
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -168,6 +192,28 @@ export function FinancingDetail({ id }: { id: string }) {
               <Line type="monotone" dataKey="Balance" stroke="#0ea5e9" strokeWidth={2} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg border border-slate-200 p-4">
+        <h2 className="text-lg font-semibold text-slate-900 mb-3">Repayment schedule comparison</h2>
+        <p className="text-sm text-slate-500 mb-4">Same principal, rate and term — how each repayment method compares.</p>
+        <div className="overflow-x-auto">
+          <table className="financial-table">
+            <thead>
+              <tr><th>Method</th><th className="text-right">First payment</th><th className="text-right">Total interest</th><th className="text-right">Total paid</th></tr>
+            </thead>
+            <tbody>
+              {comparison.map((row) => (
+                <tr key={row.method} className={row.method === account.repaymentMethod ? 'bg-indigo-50' : ''}>
+                  <td className="font-medium text-slate-900">{methodLabels[row.method]}{row.method === account.repaymentMethod && <span className="ml-2 badge-safe">current</span>}</td>
+                  <td className="text-right">{formatMoney(row.first, currency)}</td>
+                  <td className="text-right text-amber-600">{formatMoney(row.interest, currency)}</td>
+                  <td className="text-right font-medium">{formatMoney(row.total, currency)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
