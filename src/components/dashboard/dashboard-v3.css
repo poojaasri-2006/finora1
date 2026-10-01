@@ -2490,3 +2490,41 @@ html, body { overflow-x: hidden; }
   .d2-chart-card > div[style*="height"] { min-height: 200px; }
   .d2-capacity-value { font-size: 28px; }
 }
+
+/* ═══ Mobile: compact, cute cards ═══ */
+@media (max-width: 860px) {
+  .d2-content-rows { gap: 12px; }
+  .d2-greeting-name { font-size: 19px; }
+  .d2-greeting-question { font-size: 19px; }
+  .d2-greeting-sub { font-size: 11.5px; }
+  .d2-feature-card { padding: 10px; }
+  .d2-feature-illu { margin-bottom: 4px; }
+  .d2-feature-illu svg { width: 28px; height: 28px; }
+  .d2-feature-card-title { font-size: 13px; }
+  .d2-feature-card-desc { font-size: 10px; }
+  .d2-add-feature-card { min-height: 78px; }
+  .d2-panel { padding: 14px; }
+  .d2-chart-card { padding: 14px; }
+  .d2-chart-card > div[style*="height"] { min-height: 190px; }
+  .d2-premium-card { padding: 16px; }
+  .d2-premium-illu svg { width: 40px; height: 40px; }
+  .d2-premium-title { font-size: 16px; }
+  .d2-premium-desc { font-size: 11px; }
+  .d2-feature { min-height: 168px; padding: 16px; }
+  .d2-feature .d2-panel-kicker { margin-top: 56px; }
+  .d2-gauges-card { padding: 12px; }
+  .d2-gauge-item { padding: 8px 0; }
+  .d2-gauge-title { font-size: 13px; }
+  .d2-capacity-card { padding: 16px; }
+  .d2-capacity-value { font-size: 26px; }
+  .d2-board-meeting-card { padding: 14px; }
+  .d2-task-row { padding: 9px 0; }
+
+  /* compact table cards */
+  .d2-page-content .financial-table tr { padding: 2px 12px; margin-bottom: 10px; }
+  .d2-page-content .financial-table td { padding: 6px 0; font-size: 11.5px; }
+  .d2-page-content .financial-table td::before { font-size: 9px; }
+  .d2-page-content .financial-table td:first-child { font-size: 14px; padding-top: 10px; }
+  .d2-page-content .metric-card { padding: 12px; }
+  .d2-page-content .metric-card p:last-child { font-size: 18px; }
+}
